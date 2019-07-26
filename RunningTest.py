@@ -100,6 +100,51 @@ print('\nSummary')
 print('  Word Ids:       {}'.format([i for i in answer_logits if i != pad]))
 print('  Response Words: {}'.format("".join([int_to_vocab[i] for i in answer_logits if i != pad])))
 
+
+text = "FRACC REEOS TECAMAC SEC BOGSQUES."
+text = text_to_ints(text)
+
+# random = np.random.randint(0,len(testing_sorted))
+# text = testing_sorted[random]
+# text = noise_maker(text, 0.95)
+
+checkpoint = "./kp=0.75,nl=2,th=0.95.ckpt"
+
+model = tf.train.import_meta_graph('kp=0.75,nl=2,th=0.95.ckpt.meta')
+config = tf.ConfigProto()
+graph = tf.get_default_graph()
+config.graph_options.optimizer_options.global_jit_level = tf.OptimizerOptions.ON_1
+with tf.Session(config = config, graph = graph) as sess:
+    # Load saved model
+    saver = tf.train.import_meta_graph("{}.meta".format(checkpoint))#tf.train.Saver()
+    #saver = tf.train.Saver()
+    saver.restore(sess, checkpoint)
+    grafo = tf.get_default_graph()
+
+    print("Model restored")
+
+
+    # Multiply by batch_size to match the model's input parameters
+    #inputs = graph.get_operation_by_name("input").outputs[0]
+    #prediction = graph.get_operation_by_name("prediction").outputs[0]
+
+    answer_logits = sess.run(grafo.get_tensor_by_name("predictions/predictions:0"), {grafo.get_tensor_by_name("inputs/inputs:0"): [text] * batch_size,
+                                                 grafo.get_tensor_by_name("inputs_length:0"): [len(text)] * batch_size,
+                                                 grafo.get_tensor_by_name("targets_length:0"): [len(text) + 1],
+                                                 grafo.get_tensor_by_name("keep_prob:0"): [1.0]})[0]
+
+# Remove the padding from the generated sentence
+pad = vocab_to_int["<PAD>"]
+
+print('\nText')
+print('  Word Ids:    {}'.format([i for i in text]))
+print('  Input Words: {}'.format("".join([int_to_vocab[i] for i in text])))
+
+print('\nSummary')
+print('  Word Ids:       {}'.format([i for i in answer_logits if i != pad]))
+print('  Response Words: {}'.format("".join([int_to_vocab[i] for i in answer_logits if i != pad])))
+
+
 # Examples of corrected sentences:
 # - Spellin is difficult, whch is wyh you need to study everyday.
 # - Spelling is difficult, which is why you need to study everyday.
