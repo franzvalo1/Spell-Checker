@@ -57,7 +57,7 @@ keep_probability = 0.75
 # In[176]:
 
 # Create your own sentence or use one from the dataset
-text = "LOC ARROYE SEC"
+text = "COL CUAUQHTEMOC"
 text = text_to_ints(text)
 
 # random = np.random.randint(0,len(testing_sorted))

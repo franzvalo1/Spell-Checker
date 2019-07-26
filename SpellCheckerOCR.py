@@ -177,7 +177,6 @@ print("There are {} sentences.".format(len(sentences)))
 # Check to ensure the text has been split correctly.
 sentences[:5]
 
-# *Note: I expect that you have noticed the very ugly text in the first sentence. We do not need to worry about removing it from any of the books because will be limiting our data to sentences that are shorter than it.*
 
 # In[18]:
 
@@ -206,7 +205,7 @@ lengths.describe()
 
 # Limit the data we will use to train our model
 max_length = 92
-min_length = 6
+min_length = 5
 
 good_sentences = []
 
@@ -254,6 +253,8 @@ letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
 
 def noise_maker(sentence, threshold):
     '''Relocate, remove, or add characters to create spelling mistakes'''
+    '''for caracter in sentence:
+        if(int_to_vocab[character]=="O")'''
 
     noisy_sentence = []
     i = 0
@@ -283,6 +284,7 @@ def noise_maker(sentence, threshold):
             else:
                 pass
         i += 1
+
     return noisy_sentence
 
 
@@ -291,10 +293,22 @@ def noise_maker(sentence, threshold):
 # In[38]:
 
 # Check to ensure noise_maker is making mistakes correctly.
-threshold = 0.9
-for sentence in training_sorted[:5]:
+threshold = 0.8
+for sentence in training_sorted[:]:
     print(sentence)
+
     print(noise_maker(sentence, threshold))
+
+    correctsentence = ""
+    for caracter_int in sentence:
+        correctsentence += (int_to_vocab[caracter_int])
+
+    print(correctsentence)
+    noisesentence = ""
+    for caracter_int in noise_maker(sentence, threshold):
+        noisesentence += (int_to_vocab[caracter_int])
+
+    print(noisesentence)
     print()
 
 
@@ -799,7 +813,7 @@ def text_to_ints(text):
 # In[176]:
 
 # Create your own sentence or use one from the dataset
-text = "LOC ARROYE SEC"
+text = "COL CUAUQHTEMOC"
 text = text_to_ints(text)
 
 # random = np.random.randint(0,len(testing_sorted))
@@ -833,20 +847,75 @@ print('\nSummary')
 print('  Word Ids:       {}'.format([i for i in answer_logits if i != pad]))
 print('  Response Words: {}'.format("".join([int_to_vocab[i] for i in answer_logits if i != pad])))
 
-# Examples of corrected sentences:
-# - Spellin is difficult, whch is wyh you need to study everyday.
-# - Spelling is difficult, which is why you need to study everyday.
-#
-#
-# - The first days of her existence in th country were vrey hard for Dolly.
-# - The first days of her existence in the country were very hard for Dolly.
-#
-#
-# - Thi is really something impressiv thaat we should look into right away!
-# - This is really something impressive that we should look into right away!
 
-# ## Summary
+# Create your own sentence or use one from the dataset
+text = "FRACC REEOS TECAMAC SEC BOGSQUES."
+text = text_to_ints(text)
 
-# I hope that you have found this project to be rather interesting and useful. The example sentences that I have presented above were specifically chosen, and the model will not always be able to make corrections of this quality. Given the amount of data that we are working with, this model still struggles. For it to be more useful, it would require far more training data, and additional parameter tuning. This parameter values that I have above worked best for me, but I expect there are even better values that I was not able to find.
-#
-# Thanks for reading!
+# random = np.random.randint(0,len(testing_sorted))
+# text = testing_sorted[random]
+# text = noise_maker(text, 0.95)
+
+checkpoint = "./kp=0.75,nl=2,th=0.95.ckpt"
+
+model = build_graph(keep_probability, rnn_size, num_layers, batch_size, learning_rate, embedding_size, direction)
+config = tf.ConfigProto()
+config.graph_options.optimizer_options.global_jit_level = tf.OptimizerOptions.ON_1
+with tf.Session(config = config) as sess:
+    # Load saved model
+    saver = tf.train.Saver()
+    saver.restore(sess, checkpoint)
+
+    # Multiply by batch_size to match the model's input parameters
+    answer_logits = sess.run(model.predictions, {model.inputs: [text] * batch_size,
+                                                 model.inputs_length: [len(text)] * batch_size,
+                                                 model.targets_length: [len(text) + 1],
+                                                 model.keep_prob: [1.0]})[0]
+
+# Remove the padding from the generated sentence
+pad = vocab_to_int["<PAD>"]
+
+print('\nText')
+print('  Word Ids:    {}'.format([i for i in text]))
+print('  Input Words: {}'.format("".join([int_to_vocab[i] for i in text])))
+
+print('\nSummary')
+print('  Word Ids:       {}'.format([i for i in answer_logits if i != pad]))
+print('  Response Words: {}'.format("".join([int_to_vocab[i] for i in answer_logits if i != pad])))
+
+
+
+# Create your own sentence or use one from the dataset
+text = "SUMPZA 214REIDENCIL ALEQJBANDXIA."
+text = text_to_ints(text)
+
+# random = np.random.randint(0,len(testing_sorted))
+# text = testing_sorted[random]
+# text = noise_maker(text, 0.95)
+
+checkpoint = "./kp=0.75,nl=2,th=0.95.ckpt"
+
+model = build_graph(keep_probability, rnn_size, num_layers, batch_size, learning_rate, embedding_size, direction)
+config = tf.ConfigProto()
+config.graph_options.optimizer_options.global_jit_level = tf.OptimizerOptions.ON_1
+with tf.Session(config = config) as sess:
+    # Load saved model
+    saver = tf.train.Saver()
+    saver.restore(sess, checkpoint)
+
+    # Multiply by batch_size to match the model's input parameters
+    answer_logits = sess.run(model.predictions, {model.inputs: [text] * batch_size,
+                                                 model.inputs_length: [len(text)] * batch_size,
+                                                 model.targets_length: [len(text) + 1],
+                                                 model.keep_prob: [1.0]})[0]
+
+# Remove the padding from the generated sentence
+pad = vocab_to_int["<PAD>"]
+
+print('\nText')
+print('  Word Ids:    {}'.format([i for i in text]))
+print('  Input Words: {}'.format("".join([int_to_vocab[i] for i in text])))
+
+print('\nSummary')
+print('  Word Ids:       {}'.format([i for i in answer_logits if i != pad]))
+print('  Response Words: {}'.format("".join([int_to_vocab[i] for i in answer_logits if i != pad])))
