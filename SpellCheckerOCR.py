@@ -177,6 +177,8 @@ print("There are {} sentences.".format(len(sentences)))
 # Check to ensure the text has been split correctly.
 sentences[:5]
 
+# *Note: I expect that you have noticed the very ugly text in the first sentence. We do not need to worry about removing it from any of the books because will be limiting our data to sentences that are shorter than it.*
+
 
 # In[18]:
 
@@ -253,8 +255,7 @@ letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
 
 def noise_maker(sentence, threshold):
     '''Relocate, remove, or add characters to create spelling mistakes'''
-    '''for caracter in sentence:
-        if(int_to_vocab[character]=="O")'''
+
 
     noisy_sentence = []
     i = 0
@@ -309,6 +310,10 @@ for sentence in training_sorted[:]:
         noisesentence += (int_to_vocab[caracter_int])
 
     print(noisesentence)
+
+for sentence in training_sorted[:5]:
+    print(sentence)
+    print(noise_maker(sentence, threshold))
     print()
 
 
@@ -813,81 +818,10 @@ def text_to_ints(text):
 # In[176]:
 
 # Create your own sentence or use one from the dataset
+
 text = "COL CUAUQHTEMOC"
-text = text_to_ints(text)
-
-# random = np.random.randint(0,len(testing_sorted))
-# text = testing_sorted[random]
-# text = noise_maker(text, 0.95)
-
-checkpoint = "./kp=0.75,nl=2,th=0.95.ckpt"
-
-model = build_graph(keep_probability, rnn_size, num_layers, batch_size, learning_rate, embedding_size, direction)
-config = tf.ConfigProto()
-config.graph_options.optimizer_options.global_jit_level = tf.OptimizerOptions.ON_1
-with tf.Session(config = config) as sess:
-    # Load saved model
-    saver = tf.train.Saver()
-    saver.restore(sess, checkpoint)
-
-    # Multiply by batch_size to match the model's input parameters
-    answer_logits = sess.run(model.predictions, {model.inputs: [text] * batch_size,
-                                                 model.inputs_length: [len(text)] * batch_size,
-                                                 model.targets_length: [len(text) + 1],
-                                                 model.keep_prob: [1.0]})[0]
-
-# Remove the padding from the generated sentence
-pad = vocab_to_int["<PAD>"]
-
-print('\nText')
-print('  Word Ids:    {}'.format([i for i in text]))
-print('  Input Words: {}'.format("".join([int_to_vocab[i] for i in text])))
-
-print('\nSummary')
-print('  Word Ids:       {}'.format([i for i in answer_logits if i != pad]))
-print('  Response Words: {}'.format("".join([int_to_vocab[i] for i in answer_logits if i != pad])))
 
 
-# Create your own sentence or use one from the dataset
-text = "FRACC REEOS TECAMAC SEC BOGSQUES."
-text = text_to_ints(text)
-
-# random = np.random.randint(0,len(testing_sorted))
-# text = testing_sorted[random]
-# text = noise_maker(text, 0.95)
-
-checkpoint = "./kp=0.75,nl=2,th=0.95.ckpt"
-
-model = build_graph(keep_probability, rnn_size, num_layers, batch_size, learning_rate, embedding_size, direction)
-config = tf.ConfigProto()
-config.graph_options.optimizer_options.global_jit_level = tf.OptimizerOptions.ON_1
-with tf.Session(config = config) as sess:
-    # Load saved model
-    saver = tf.train.Saver()
-    saver.restore(sess, checkpoint)
-
-    # Multiply by batch_size to match the model's input parameters
-    answer_logits = sess.run(model.predictions, {model.inputs: [text] * batch_size,
-                                                 model.inputs_length: [len(text)] * batch_size,
-                                                 model.targets_length: [len(text) + 1],
-                                                 model.keep_prob: [1.0]})[0]
-
-# Remove the padding from the generated sentence
-pad = vocab_to_int["<PAD>"]
-
-print('\nText')
-print('  Word Ids:    {}'.format([i for i in text]))
-print('  Input Words: {}'.format("".join([int_to_vocab[i] for i in text])))
-
-print('\nSummary')
-print('  Word Ids:       {}'.format([i for i in answer_logits if i != pad]))
-print('  Response Words: {}'.format("".join([int_to_vocab[i] for i in answer_logits if i != pad])))
-
-
-
-# Create your own sentence or use one from the dataset
-text = "SUMPZA 214REIDENCIL ALEQJBANDXIA."
-text = text_to_ints(text)
 
 # random = np.random.randint(0,len(testing_sorted))
 # text = testing_sorted[random]

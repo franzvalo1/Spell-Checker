@@ -26,6 +26,7 @@ from tensorflow.python.ops.rnn_cell_impl import _zero_state_tensors
 import time
 import re
 import unicodedata
+import unidecode
 from sklearn.model_selection import train_test_split
 
 
@@ -36,9 +37,10 @@ from sklearn.model_selection import train_test_split
 def load_book(path):
     """Load a book from its file"""
     input_file = os.path.join(path)
+
     with open(input_file,'r', encoding='utf-8',errors='replace') as f:
         book = f.read()
-    print(type(book))
+
     return book
 
 
@@ -74,18 +76,8 @@ books[0][:500]
 
 def clean_text(text):
     '''Remove unwanted characters and extra spaces from the text'''
-    text = text.upper()
-    text = text.replace('"','')
-    text = re.sub(r':', '', text)
+
     text = re.sub(r'\n', ' ', text)
-    text = re.sub(r'\[\]', ' ', text)
-    text = re.sub(r'\$', ' ', text)
-    text = re.sub(r';', ' ', text)
-    text = re.sub(r'!', ' ', text)
-    text = re.sub(r'~', ' ', text)
-    text = re.sub(r'&', ' ', text)
-    text = re.sub(r'\^', ' ', text)
-    text = re.sub(r'{', ' ', text)
     text = re.sub(r'[{}@_*>()\\#%+=\[\]]', '', text)
     text = re.sub('a0', '', text)
     text = re.sub('\'92t', '\'t', text)
@@ -114,6 +106,9 @@ def clean_text(text):
     text = text.replace("/", "")
 
     text = unicodedata.normalize('NFD', text).encode('ascii', 'replace').decode('utf-8')
+    text = unidecode.unidecode(text)
+    text = text.upper()
+
     return text
 
 
